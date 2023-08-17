@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define _STR(X) #X
+#define STR(x) _STR(x)
 
 #define MAX_STRING 256
 #define MAX_TOKENS 128  // maximum (MAX_STRING / 2 - 1)
@@ -31,25 +33,29 @@ double calculate(Token* postfix, int len_tokens);
 // ------ utility functions -------
 int token_typevalue(enum TokenType type);
 bool token_ge(Token a, Token b);
-void print_tokens(Token* tokens, int len);
+bool match(char symbol, const char* charset);
+void print_tokens(Token* tokens, int len, bool show_pr);
 // --------------------------------
 
 int main(){
-    const char test_string[] = "(2.71 - 3.14 + 4) * (5.412 + 6/7)";
+    // (2.71 - 3.14 + 4) * (5.412 + 6/7);
 
-    int len;
+    char buffer[MAX_STRING];
+    fgets(buffer, MAX_STRING, stdin);
+
+    int len_expr;
 
     Token tokens[MAX_TOKENS];
-    lexer(test_string, tokens, &len);
+    lexer(buffer, tokens, &len_expr);
     printf("Tokenized expression:           ");
-    print_tokens(tokens, len); printf("\n");
+    print_tokens(tokens, len_expr, true); printf("\n");
 
     Token posfix[MAX_TOKENS];
     printf("Expression in postfix notation: ");
-    parser(tokens, len, posfix);
-    print_tokens(posfix, len); printf("\n");
+    parser(tokens, len_expr, posfix);
+    print_tokens(posfix, len_expr, false); printf("\n");
 
-    double result = calculate(posfix, len);
+    double result = calculate(posfix, len_expr);
     printf("Calculated expression:          %f\n", result);
 
     return 0;
@@ -67,8 +73,8 @@ void lexer(const char* string, Token* tokens, int* len_tokens){
     int i_string = 0;
 
     for(i_string; i_string<strlen(string); i_string++){
-        // Ignore spaces
-        if(string[i_string] == ' ') continue;;
+        // Ignore spaces nad newlines
+        if(match(string[i_string], " \n")) continue;
         // If operator
         int i = 0;
         for(i; i < 6; i++){
@@ -211,12 +217,19 @@ int token_typevalue(enum TokenType type){
     }
 };
 
-void print_tokens(Token* tokens, int len){
+bool match(char symbol, const char* charset){
+    for(int i = 0; i<strlen(charset); i++){
+        if(symbol == charset[i]) return true;
+    }
+    return false;
+};
+
+void print_tokens(Token* tokens, int len, bool show_pr){
     for(int i = 0; i<len; i++){
         if(tokens[i].type == TOKEN_NUM){
             printf("%.2f ", tokens[i].value);
         } else {
-            if(token_typevalue(tokens[i].type) > 0){
+            if(token_typevalue(tokens[i].type) > 0 || show_pr){
                 printf("%c ", TOKEN_STRING[tokens[i].type]);
             }
         };
