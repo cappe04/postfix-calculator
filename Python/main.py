@@ -23,7 +23,7 @@ class Oper(Enum):
     __repr__ = __str__
     
     @classmethod
-    def factory(cls, symbol):
+    def get(cls, symbol):
         for member in cls:
             if symbol == member.symbol:
                 return member
@@ -51,13 +51,16 @@ def postfix(expr: str):
                 postf.append(stack.pop())
             stack.pop()
         else:
-            op = Oper.factory(char)
+            op = Oper.get(char)
             while stack and isinstance(stack[-1], Oper) and stack[-1].order >= op.order:
                 postf.append(stack.pop())
             stack.append(op)
 
     if num_stack != "":
         postf.append(float(num_stack))
+    
+    if stack:
+        while stack: postf.append(stack.pop())
 
     return postf + list(reversed(stack))
 
