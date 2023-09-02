@@ -27,7 +27,7 @@ class Postfix {
             stack.RemoveAt(stack.Count - 1);
             float a = stack.Last();
 
-            stack[stack.Count - 1] = token.type switch{
+            stack[^1] = token.type switch{
                 Type.SUB => a - b,
                 Type.ADD => a + b,
                 Type.DIV => a / b,
